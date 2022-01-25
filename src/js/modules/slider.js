@@ -20,6 +20,24 @@ export default class Slider {
         });
 
         this.slides[this.sliderIndex - 1].style.display = 'block';
+        
+        //всплывающий блок на слайде №3
+        try {
+            const hanson = document.querySelector('.hanson');
+            let timerId;
+            if (n == 3) {
+            hanson.style.opacity = 0;
+            timerId = setTimeout(() => {
+                hanson.style.opacity = 1;
+                hanson.classList.add('animated', 'slideInUp');
+                }, 3000);
+            } else {
+                clearTimeout(timerId);
+                hanson.classList.remove('slideInUp');
+
+            }
+        } catch(e) {}
+        
     }
 
     plusSlide (n) {
@@ -33,7 +51,7 @@ export default class Slider {
             });
 
             btn.parentNode.previousElementSibling.addEventListener('click', (e) =>{
-                e.preventDefault();
+                // e.preventDefault();
                 this.sliderIndex = 1;
                 this.showSlide(this.sliderIndex);
             });
