@@ -99,6 +99,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/slider/slider-mini */ "./src/js/modules/slider/slider-mini.js");
 /* harmony import */ var _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/playVideo */ "./src/js/modules/playVideo.js");
 /* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
+/* harmony import */ var _modules_form__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/form */ "./src/js/modules/form.js");
+
 
 
 
@@ -137,7 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const player = new _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__["default"]('.showup .play', '.overlay');
   player.init();
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').init();
-  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init(); //new Form('form').init();
 });
 
 /***/ }),
@@ -184,6 +186,62 @@ class Difference {
   init() {
     this.hide();
     this.bindTriggers(this.items, this.count);
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/js/modules/form.js":
+/*!********************************!*\
+  !*** ./src/js/modules/form.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Form; });
+class Form {
+  constructor(forms) {
+    this.forms = document.querySelectorAll(forms);
+    this.message = {
+      loading: 'Загрузка...',
+      success: 'Спасибо! Скоро мы с вами свяжемся',
+      failure: 'Что-то пошло не так...'
+    };
+    this.path = 'assets/question.php';
+  }
+
+  async postData(url, data) {
+    let res = await fetch(url, {
+      method: 'POST',
+      body: data
+    });
+    return await res.text();
+  }
+
+  init() {
+    this.forms.forEach(form => {
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        let statusMessage = document.createElement('div');
+        statusMessage.style.cssText = `
+                    margin-top: 15px;
+                    font-size: 18px;
+                    color: green;
+                `;
+        form.parentNode.append(statusMessage);
+        statusMessage.textContent = this.message.loading;
+        const formData = new FormData();
+        this.postData(this.path, formData).then(data => {
+          console.log(data);
+          statusMessage.textContent = this.message.success;
+        }).catch(() => {
+          statusMessage.textContent = this.message.fail;
+        });
+      });
+    });
   }
 
 }
