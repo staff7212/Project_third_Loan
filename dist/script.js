@@ -98,6 +98,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_slider_slider_main__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/slider/slider-main */ "./src/js/modules/slider/slider-main.js");
 /* harmony import */ var _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/slider/slider-mini */ "./src/js/modules/slider/slider-mini.js");
 /* harmony import */ var _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/playVideo */ "./src/js/modules/playVideo.js");
+/* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
+
 
 
 
@@ -134,7 +136,57 @@ window.addEventListener('DOMContentLoaded', () => {
   feedSlider.init();
   const player = new _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__["default"]('.showup .play', '.overlay');
   player.init();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').init();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init();
 });
+
+/***/ }),
+
+/***/ "./src/js/modules/difference.js":
+/*!**************************************!*\
+  !*** ./src/js/modules/difference.js ***!
+  \**************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Difference; });
+class Difference {
+  constructor(officer, items) {
+    this.officer = document.querySelector(officer);
+    this.items = this.officer.querySelectorAll(items);
+    this.count = 0;
+  }
+
+  bindTriggers(items, count) {
+    items[items.length - 1].addEventListener('click', () => {
+      items[count].style.display = 'flex';
+      items[count].classList.add('fadeIn');
+
+      if (count != items.length - 2) {
+        count++;
+      } else {
+        items[items.length - 1].remove();
+      }
+    });
+  }
+
+  hide() {
+    this.items.forEach((item, index, arr) => {
+      if (index != arr.length - 1) {
+        item.classList.add('animated');
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  init() {
+    this.hide();
+    this.bindTriggers(this.items, this.count);
+  }
+
+}
 
 /***/ }),
 
