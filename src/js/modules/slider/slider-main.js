@@ -48,7 +48,15 @@ export default class MainSlider extends Slider {
         this.showSlide(this.sliderIndex += n);
     }
 
-    render() {
+    switchingModules(directionBtn, n) {
+        directionBtn.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.plusSlide(n);
+            });
+        });
+    }
+
+    bindTriggers() {
         this.btns.forEach(btn => {
             btn.addEventListener('click', () => {
                 this.plusSlide(1);
@@ -60,7 +68,14 @@ export default class MainSlider extends Slider {
                 this.showSlide(this.sliderIndex);
             });
         });
+    }
 
-        this.showSlide(this.sliderIndex);
+    render() {
+        if (this.container) {
+            this.bindTriggers();
+            this.switchingModules(this.btnsNext, 1);
+            this.switchingModules(this.btnsPrev, -1);
+            this.showSlide(this.sliderIndex);
+        }
     }
 }
