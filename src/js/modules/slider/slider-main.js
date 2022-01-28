@@ -38,10 +38,8 @@ export default class MainSlider extends Slider {
             } else {
                 clearTimeout(timerId);
                 hanson.classList.remove('slideInUp');
-
             }
-        } catch(e) {}
-        
+        } catch(e) {}   
     }
 
     plusSlide (n) {

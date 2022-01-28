@@ -108,9 +108,16 @@ __webpack_require__.r(__webpack_exports__);
 window.addEventListener('DOMContentLoaded', () => {
   const slider = new _modules_slider_slider_main__WEBPACK_IMPORTED_MODULE_0__["default"]({
     container: '.page',
-    btns: '.next'
+    btns: 'a.next'
   });
   slider.render();
+  const modulePageSlider = new _modules_slider_slider_main__WEBPACK_IMPORTED_MODULE_0__["default"]({
+    container: '.moduleapp',
+    btns: 'a.next',
+    btnsNext: '.nextmodule',
+    btnsPrev: '.prevmodule'
+  });
+  modulePageSlider.render();
   const showUpSlider = new _modules_slider_slider_mini__WEBPACK_IMPORTED_MODULE_1__["default"]({
     container: '.showup__content-slider',
     prev: '.showup__prev',
@@ -136,10 +143,11 @@ window.addEventListener('DOMContentLoaded', () => {
     activeClass: 'feed__item-active'
   });
   feedSlider.init();
-  const player = new _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__["default"]('.showup .play', '.overlay');
-  player.init();
+  new _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__["default"]('.showup .play', '.overlay').init();
+  new _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__["default"]('.module__video-item .play', '.overlay').init();
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').init();
-  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init(); //new Form('form').init();
+  new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init();
+  new _modules_form__WEBPACK_IMPORTED_MODULE_4__["default"]('.form').init();
 });
 
 /***/ }),
@@ -156,9 +164,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Difference; });
 class Difference {
   constructor(officer, items) {
-    this.officer = document.querySelector(officer);
-    this.items = this.officer.querySelectorAll(items);
-    this.count = 0;
+    try {
+      this.officer = document.querySelector(officer);
+      this.items = this.officer.querySelectorAll(items);
+      this.count = 0;
+    } catch (e) {}
   }
 
   bindTriggers(items, count) {
@@ -184,8 +194,10 @@ class Difference {
   }
 
   init() {
-    this.hide();
-    this.bindTriggers(this.items, this.count);
+    try {
+      this.hide();
+      this.bindTriggers(this.items, this.count);
+    } catch (e) {}
   }
 
 }
@@ -205,6 +217,7 @@ __webpack_require__.r(__webpack_exports__);
 class Form {
   constructor(forms) {
     this.forms = document.querySelectorAll(forms);
+    this.inputs = document.querySelectorAll('input');
     this.message = {
       loading: 'Загрузка...',
       success: 'Спасибо! Скоро мы с вами свяжемся',
@@ -221,7 +234,95 @@ class Form {
     return await res.text();
   }
 
+  clearInputs() {
+    this.inputs.forEach(input => {
+      input.value = '';
+    });
+    document.querySelector('select').selectedIndex = 0;
+  }
+
+  blockBtn(boolean) {
+    this.forms.forEach(form => {
+      let btn = form.querySelector('.btn');
+      btn.disabled = boolean;
+    });
+  }
+
+  checkInputsText() {
+    this.inputs.forEach(input => {
+      input.addEventListener('blur', () => {
+        if (input.value.trim() === '') {
+          input.style.border = '1px solid red';
+          this.blockBtn(true);
+        } else {
+          input.style.border = '';
+          this.blockBtn(false);
+        }
+      });
+    });
+  }
+
+  checkMailInputs() {
+    const textInput = document.querySelectorAll('[type="email"]');
+    textInput.forEach(input => {
+      input.addEventListener('input', function (e) {
+        e.target.value = e.target.value.replace(/[^a-z 0-9 \. @ \-]/ig, '');
+      });
+    });
+  }
+
+  initMask() {
+    let setCursorPosirion = (pos, elem) => {
+      elem.focus();
+
+      if (elem.setSelectionRange) {
+        elem.setSelectionRange(pos, pos);
+      } else if (elem.createTextRange) {
+        let range = elem.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', pos);
+        range.moveStart('character', pos);
+        range.select();
+      }
+    };
+
+    function createMask(event) {
+      let matrix = '+ 1 (___) ___-____',
+          i = 0,
+          def = matrix.replace(/\D/g, ''),
+          val = this.value.replace(/\D/g, '');
+
+      if (def.length >= val.length || this.selectionStart < 4 && this.selectionEnd < 4) {
+        val = def;
+      }
+
+      this.value = matrix.replace(/./g, function (a) {
+        return /[_\d]/.test(a) && i < val.length ? val.charAt(i++) : i >= val.length ? '' : a;
+      });
+
+      if (event.type === 'blur') {
+        if (this.value.length < 6) {
+          this.value = '';
+        }
+      } else {
+        setCursorPosirion(this.value.length, this);
+      }
+    }
+
+    let inputs = document.querySelectorAll('[name="phone"]');
+    inputs.forEach(input => {
+      input.addEventListener('input', createMask);
+      input.addEventListener('focus', createMask);
+      input.addEventListener('blur', createMask);
+      input.addEventListener('click', createMask);
+    });
+  }
+
   init() {
+    this.blockBtn(true);
+    this.checkMailInputs();
+    this.checkInputsText();
+    this.initMask();
     this.forms.forEach(form => {
       form.addEventListener('submit', event => {
         event.preventDefault();
@@ -233,12 +334,18 @@ class Form {
                 `;
         form.parentNode.append(statusMessage);
         statusMessage.textContent = this.message.loading;
-        const formData = new FormData();
+        const formData = new FormData(form);
         this.postData(this.path, formData).then(data => {
           console.log(data);
           statusMessage.textContent = this.message.success;
         }).catch(() => {
-          statusMessage.textContent = this.message.fail;
+          statusMessage.textContent = this.message.failure;
+        }).finally(() => {
+          this.clearInputs();
+          setTimeout(() => {
+            statusMessage.remove();
+          }, 5000);
+          this.blockBtn(true);
         });
       });
     });
@@ -263,16 +370,37 @@ class VideoPlayer {
     this.btns = document.querySelectorAll(triggers);
     this.overlay = document.querySelector(overlay);
     this.close = this.overlay.querySelector('.close');
+    this.onPlayerStateChange = this.onPlayerStateChange.bind(this);
   }
 
   bindTriggers() {
-    this.btns.forEach(btn => {
+    this.btns.forEach((btn, i) => {
+      // try {
+      //     const blockedElement = btn.closest('.module__video-item').nextElementSibling;
+      //     if (i % 2 === 0) {
+      //         blockedElement.setAttribute('data-disabled', 'true');
+      //     }
+      // } catch (e) {}
+      //присвоение нечетным видео дата атрибута для дальнейшей проверки
       btn.addEventListener('click', () => {
-        if (document.querySelector('iframe#frame')) {
-          this.overlay.style.display = 'flex';
-        } else {
-          const path = btn.getAttribute('data-url');
-          this.createPlayer(path);
+        //if (!btn.closest('.module__video-item') || btn.closest('.module__video-item').getAttribute('data-disabled') !== 'true') {
+        //проверка дата атрибота, но проще провирь класс, так как он удаляется после просмотра видео
+        if (!btn.querySelector('.play__circle').classList.contains('closed')) {
+          this.activeBtn = btn;
+
+          if (document.querySelector('iframe#frame')) {
+            this.overlay.style.display = 'flex';
+
+            if (this.path !== btn.getAttribute('data-url')) {
+              this.path = btn.getAttribute('data-url');
+              this.player.loadVideoById({
+                videoId: this.path
+              });
+            }
+          } else {
+            this.path = btn.getAttribute('data-url');
+            this.createPlayer(this.path);
+          }
         }
       });
     });
@@ -289,19 +417,43 @@ class VideoPlayer {
     this.player = new YT.Player('frame', {
       height: '100%',
       width: '100%',
-      videoId: `${url}`
+      videoId: `${url}`,
+      events: {
+        'onStateChange': this.onPlayerStateChange
+      }
     });
-    console.log(this.player);
     this.overlay.style.display = 'flex';
   }
 
+  onPlayerStateChange(stage) {
+    try {
+      const blockedElement = this.activeBtn.parentNode.nextElementSibling;
+      const playBtn = this.activeBtn.querySelector('svg').cloneNode(true);
+
+      if (stage.data === 0 && blockedElement.tagName === 'DIV') {
+        if (blockedElement.querySelector('.play__circle').classList.contains('closed')) {
+          blockedElement.querySelector('.play__circle').classList.remove('closed');
+          blockedElement.querySelector('svg').remove();
+          blockedElement.querySelector('.play__circle').append(playBtn);
+          blockedElement.querySelector('.play__text').textContent = 'play video';
+          blockedElement.querySelector('.play__text').classList.remove('attention');
+          blockedElement.style.opacity = 1;
+          blockedElement.style.filter = 'none'; //при работе с проверкой по дата атрибуту
+          // blockedElement.setAttribute('data-disabled', 'false');
+        }
+      }
+    } catch (e) {}
+  }
+
   init() {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    this.bindTriggers();
-    this.bindCloseBtn();
+    if (this.btns.length > 0) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      this.bindTriggers();
+      this.bindCloseBtn();
+    }
   }
 
 }
@@ -364,7 +516,15 @@ class MainSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
     this.showSlide(this.sliderIndex += n);
   }
 
-  render() {
+  switchingModules(directionBtn, n) {
+    directionBtn.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.plusSlide(n);
+      });
+    });
+  }
+
+  bindTriggers() {
     this.btns.forEach(btn => {
       btn.addEventListener('click', () => {
         this.plusSlide(1);
@@ -375,7 +535,15 @@ class MainSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
         this.showSlide(this.sliderIndex);
       });
     });
-    this.showSlide(this.sliderIndex);
+  }
+
+  render() {
+    if (this.container) {
+      this.bindTriggers();
+      this.switchingModules(this.btnsNext, 1);
+      this.switchingModules(this.btnsPrev, -1);
+      this.showSlide(this.sliderIndex);
+    }
   }
 
 }
@@ -484,27 +652,29 @@ class MiniSlider extends _slider__WEBPACK_IMPORTED_MODULE_0__["default"] {
   }
 
   init() {
-    this.container.style.cssText = `
-            display: flex;
-            flex-wrap: wrap;
-            overflow: hidden;
-            align-items: flex-start;
-        `;
-    this.bindTriggers();
-    this.decoraizeSlide();
+    try {
+      this.container.style.cssText = `
+                display: flex;
+                flex-wrap: wrap;
+                overflow: hidden;
+                align-items: flex-start;
+            `;
+      this.bindTriggers();
+      this.decoraizeSlide();
 
-    if (this.autoplay) {
-      this.autoplayGo();
-      this.next.addEventListener('mouseleave', () => {
+      if (this.autoplay) {
         this.autoplayGo();
-      });
-      this.prev.addEventListener('mouseleave', () => {
-        this.autoplayGo();
-      });
-      this.container.addEventListener('mouseleave', () => {
-        this.autoplayGo();
-      });
-    }
+        this.next.addEventListener('mouseleave', () => {
+          this.autoplayGo();
+        });
+        this.prev.addEventListener('mouseleave', () => {
+          this.autoplayGo();
+        });
+        this.container.addEventListener('mouseleave', () => {
+          this.autoplayGo();
+        });
+      }
+    } catch (e) {}
   }
 
 }
@@ -526,6 +696,8 @@ class Slider {
     let {
       container = null,
       btns = null,
+      btnsNext = null,
+      btnsPrev = null,
       next = null,
       prev = null,
       activeClass,
@@ -533,8 +705,14 @@ class Slider {
       autoplay
     } = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     this.container = document.querySelector(container);
-    this.slides = this.container.children;
+
+    try {
+      this.slides = this.container.children;
+    } catch (e) {}
+
     this.btns = document.querySelectorAll(btns);
+    this.btnsNext = document.querySelectorAll(btnsNext);
+    this.btnsPrev = document.querySelectorAll(btnsPrev);
     this.next = document.querySelector(next);
     this.prev = document.querySelector(prev);
     this.activeClass = activeClass;
