@@ -100,6 +100,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_playVideo__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/playVideo */ "./src/js/modules/playVideo.js");
 /* harmony import */ var _modules_difference__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/difference */ "./src/js/modules/difference.js");
 /* harmony import */ var _modules_form__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/form */ "./src/js/modules/form.js");
+/* harmony import */ var _modules_accordion__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/accordion */ "./src/js/modules/accordion.js");
+/* harmony import */ var _modules_download__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/download */ "./src/js/modules/download.js");
+
+
 
 
 
@@ -148,7 +152,48 @@ window.addEventListener('DOMContentLoaded', () => {
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officerold', '.officer__card-item').init();
   new _modules_difference__WEBPACK_IMPORTED_MODULE_3__["default"]('.officernew', '.officer__card-item').init();
   new _modules_form__WEBPACK_IMPORTED_MODULE_4__["default"]('.form').init();
+  new _modules_accordion__WEBPACK_IMPORTED_MODULE_5__["default"]('.plus').init();
+  new _modules_download__WEBPACK_IMPORTED_MODULE_6__["default"]('.download').init();
 });
+
+/***/ }),
+
+/***/ "./src/js/modules/accordion.js":
+/*!*************************************!*\
+  !*** ./src/js/modules/accordion.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Accordion; });
+class Accordion {
+  constructor(tridders) {
+    this.tridders = document.querySelectorAll(tridders);
+  }
+
+  showContent() {
+    this.tridders.forEach(tridder => {
+      tridder.addEventListener('click', () => {
+        const content = tridder.parentNode.nextElementSibling;
+
+        if (!content.classList.contains('fadeInDown')) {
+          content.classList.add('animated', 'fadeInDown');
+          content.style.display = 'block';
+        } else {
+          content.classList.remove('animated', 'fadeInDown');
+          content.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  init() {
+    this.showContent();
+  }
+
+}
 
 /***/ }),
 
@@ -198,6 +243,45 @@ class Difference {
       this.hide();
       this.bindTriggers(this.items, this.count);
     } catch (e) {}
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/js/modules/download.js":
+/*!************************************!*\
+  !*** ./src/js/modules/download.js ***!
+  \************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Download; });
+class Download {
+  constructor(triggers) {
+    this.btns = document.querySelectorAll(triggers);
+    this.path = 'assets/img/mainbg.jpg';
+  }
+
+  downloadItem(path) {
+    const elem = document.createElement('a');
+    elem.setAttribute('href', path);
+    elem.setAttribute('download', 'nice_picture');
+    elem.style.display = 'none';
+    document.body.append(elem);
+    elem.click();
+    elem.remove();
+  }
+
+  init() {
+    this.btns.forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        this.downloadItem(this.path);
+      });
+    });
   }
 
 }
